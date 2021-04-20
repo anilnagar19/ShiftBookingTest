@@ -1,15 +1,21 @@
 import sendRequest from "./services/http";
+import CONSTANTS from "./services/constants";
 
-export function itemsFetchDataSuccess(items) {
-  return {
-    type: "FETCH_DATA",
-    items,
+export function itemsFetchData() {
+  return async (dispatch) => {
+    const options = {
+      url: CONSTANTS.SERVER_URL + "shifts",
+      method: "get",
+    };
+    const response = await sendRequest(options);
+
+    dispatch(itemsFetchDataSuccess(response));
   };
 }
 
-export function itemsFetchData(options) {
-  return async (dispatch) => {
-    let resposne = await sendRequest(options);
-    dispatch(itemsFetchDataSuccess(resposne));
+function itemsFetchDataSuccess(items) {
+  return {
+    type: "FETCH_DATA",
+    items,
   };
 }

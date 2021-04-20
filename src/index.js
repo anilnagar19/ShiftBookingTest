@@ -18,11 +18,9 @@ function configureStore() {
 }
 
 ReactDOM.render(
-  <React.StrictMode>
-    <Provider store={configureStore()}>
-      <App />
-    </Provider>
-  </React.StrictMode>,
+  <Provider store={configureStore()}>
+    <App />
+  </Provider>,
   document.getElementById("root")
 );
 

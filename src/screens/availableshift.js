@@ -1,7 +1,7 @@
 import React from "react";
-import { useState } from "react";
-
 import Moment from "moment";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
 import List from "@material-ui/core/List";
@@ -17,22 +17,46 @@ import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import ButtonWithLoader from "../components/buttonwithloader";
 import { overlap, getSlotDay } from "../services/utils";
 
-function AvailableShift(props) {
+function AvailableShift() {
+  const errorColor = {
+    color: "#E2006A",
+  };
+  const successColor = {
+    color: "#16A64D",
+  };
   const classes = useStyles();
   const moment = extendMoment(Moment);
-
   const currentTimeStamp = moment().unix();
 
+  const [areaValue, setAreaValue] = useState(0);
+  const areaGroupedShifts = useSelector(
+    (state) => state.shiftReducer.areaGroupedShifts
+  );
+  const [shiftByDate, setShiftByDate] = useState(areaGroupedShifts);
+
+  useEffect(() => {
+    if (areaGroupedShifts) {
+      setShiftByDate(areaGroupedShifts[areaValue].shift);
+    }
+  }, [areaGroupedShifts]);
+
+  useEffect(() => {
+    if (areaGroupedShifts) {
+      setShiftByDate(areaGroupedShifts[areaValue].shift);
+    }
+  }, [areaValue]);
+
+  //TO show current status of shift
   const getShiftStatus = (shift) => {
     let shiftTime = moment(shift.startTime).format("YYYY-MM-DD");
 
-    let dateShift = props.shiftByDate.filter((shift) => {
+    let dateShift = shiftByDate.filter((shift) => {
       return shiftTime === shift.date;
     });
 
-    dateShift[0].shift.forEach((element) => {
-      if (moment(shift.startTime).format("YYYY-MM-DD") === "2021-04-24") {
-        if (shift.id !== element.id && !element.overlapped) {
+    if (dateShift[0]) {
+      dateShift[0].shift.forEach((element) => {
+        if (shift.id !== element.id && !shift.overlapped) {
           let slot1Start = moment(shift.startTime).format("HH:mm");
           let slot1End = moment(shift.endTime).format("HH:mm");
 
@@ -43,41 +67,46 @@ function AvailableShift(props) {
           timeSegments.push([slot1Start, slot1End]);
           timeSegments.push([slot2Start, slot2End]);
 
-          shift.overlapped = overlap(timeSegments);
+          element.overlapped = overlap(timeSegments);
         }
-      }
-    });
+      });
+    }
 
     if (shift.overlapped) {
-      return " ( OverLapped ) ";
+      return "OverLapping";
     } else if (shift.booked) {
-      return " ( Booked )";
+      return "Booked";
     } else {
       return "";
     }
   };
 
+  const handleAreaChange = (event, newValue) => {
+    setAreaValue(newValue);
+  };
+
   return (
     <div>
       <Tabs
-        value={props.areaValue}
-        onChange={props.handleAreaChange}
+        value={areaValue}
+        onChange={(event, value) => {
+          handleAreaChange(event, value);
+        }}
         aria-label="simple tabs example"
         indicatorColor="primary"
         textColor="primary"
         centered
       >
-        {props.allAreaList &&
-          props.allAreaList.map((areaItem, key) => (
+        {areaGroupedShifts &&
+          areaGroupedShifts.map((areaItem, key) => (
             <Tab
               key={key}
               label={areaItem.area + "(" + areaItem.shift.length + ")"}
             />
           ))}
       </Tabs>
-
-      {props.shiftByDate &&
-        props.shiftByDate.map((areaItem, key) => (
+      {shiftByDate &&
+        shiftByDate.map((areaItem, key) => (
           <TabPanel value={key} index={key} key={key}>
             <div>
               <List
@@ -88,32 +117,39 @@ function AvailableShift(props) {
                 }
               >
                 {areaItem.shift &&
-                  areaItem.shift.map((shift, shiftKey) => (
-                    <div key={shiftKey}>
-                      <ListItem>
-                        <ListItemText
-                          id="switch-list-label-wifi"
-                          primary={
-                            moment(shift.startTime).format("HH:mm ") +
-                            " - " +
-                            moment(shift.endTime).format("HH:mm ") +
-                            getShiftStatus(shift) +
-                            shift.overlapped
-                          }
-                        />
-
-                        <ListItemSecondaryAction>
-                          <ButtonWithLoader
-                            shift={shift}
-                            isButtonDisable={
-                              moment(shift.endTime).unix() < currentTimeStamp ||
-                              shift.overlapped
+                  areaItem.shift.map((shift, shiftKey) => {
+                    return (
+                      <div key={shiftKey}>
+                        <ListItem>
+                          <ListItemText
+                            id="switch-list-label-wifi"
+                            primary={
+                              moment(shift.startTime).format("HH:mm ") +
+                              " - " +
+                              moment(shift.endTime).format("HH:mm ")
                             }
+                            secondary={getShiftStatus(shift)}
+                            secondaryTypographyProps={{
+                              style:
+                                getShiftStatus(shift) === "OverLapping"
+                                  ? errorColor
+                                  : successColor,
+                            }}
                           />
-                        </ListItemSecondaryAction>
-                      </ListItem>
-                    </div>
-                  ))}
+
+                          <ListItemSecondaryAction>
+                            <ButtonWithLoader
+                              shift={shift}
+                              isButtonDisable={
+                                moment(shift.endTime).unix() <
+                                  currentTimeStamp || shift.overlapped
+                              }
+                            />
+                          </ListItemSecondaryAction>
+                        </ListItem>
+                      </div>
+                    );
+                  })}
               </List>
             </div>
           </TabPanel>

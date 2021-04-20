@@ -53,7 +53,16 @@ const getDuration = (item) => {
     moment(endTime, "HH:mm a").diff(moment(startTime, "HH:mm a"))
   );
 
-  return ` ${duration.hours()} Hour ${duration.minutes()} minutes`;
+  let timeToShow;
+  if (duration.hours() > 0 && duration.minutes() > 0) {
+    timeToShow = duration.hours() + " Hour " + duration.minutes() + " minutes";
+  } else if (duration.hours() <= 0) {
+    timeToShow = duration.minutes() + " minutes";
+  } else if (duration.minutes() <= 0) {
+    timeToShow = duration.hours() + " Hour ";
+  }
+
+  return timeToShow;
 };
 
 const overlap = (timeSegments) => {

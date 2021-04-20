@@ -15,9 +15,12 @@ function ButtonWithLoader(props) {
   const classes = useStyles();
   const dispatch = useDispatch();
 
+  const [shift, setShift] = useState({});
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {});
+  useEffect(() => {
+    setShift(props.shift);
+  }, [props.shift]);
 
   function getAllShifts() {
     let data = {
@@ -29,27 +32,41 @@ function ButtonWithLoader(props) {
 
   const bookShift = async () => {
     setLoading(true);
+
     let data = {
-      url: CONSTANTS.SERVER_URL + "shifts/" + props.shift.id + "/book",
+      url: CONSTANTS.SERVER_URL + "shifts/" + shift.id + "/book",
       method: "POST",
     };
+
     const response = await sendRequest(data);
+
     setLoading(false);
+
     if (response) {
+      //   dispatch({
+      //     type: "BOOKING_STATUS",
+      //     status: { message: "Booked SuccessFully", status: true },
+      //   });
       getAllShifts();
-    } else {
     }
   };
 
   const cancelShift = async () => {
     setLoading(true);
+
     let data = {
-      url: CONSTANTS.SERVER_URL + "shifts/" + props.shift.id + "/cancel",
+      url: CONSTANTS.SERVER_URL + "shifts/" + shift.id + "/cancel",
       method: "POST",
     };
+
     const response = await sendRequest(data);
+
     setLoading(false);
     if (response) {
+      //   dispatch({
+      //     type: "BOOKING_STATUS",
+      //     status: { message: "Canceled SuccessFully", status: true },
+      //   });
       getAllShifts();
     }
   };
@@ -57,13 +74,13 @@ function ButtonWithLoader(props) {
   return (
     <div>
       <div className={classes.wrapper}>
-        {props.shift.booked ? (
+        {shift.booked ? (
           <Chip
             label="Cancel"
             onClick={() => cancelShift()}
             variant="outlined"
             color="secondary"
-            disabled={props.isButtonDisable}
+            disabled={props.isButtonDisable || loading}
           />
         ) : (
           <Chip
@@ -71,7 +88,7 @@ function ButtonWithLoader(props) {
             onClick={() => bookShift()}
             variant="outlined"
             color="primary"
-            disabled={props.isButtonDisable}
+            disabled={props.isButtonDisable || loading}
           />
         )}
         {loading && (
