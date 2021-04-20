@@ -10,3 +10,4 @@ NPM v. >=5
 3. cd ShiftBookingTest
 4. npm install
 5. npm start
+6. open the browser and open http://localhost:3000/
