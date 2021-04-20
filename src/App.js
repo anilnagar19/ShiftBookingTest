@@ -32,7 +32,7 @@ function App() {
 
   useEffect(() => {
     getAllShifts();
-  }, [allShifts]);
+  }, []);
 
   useEffect(() => {
     getUpdatedData();

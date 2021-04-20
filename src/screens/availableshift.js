@@ -31,18 +31,20 @@ function AvailableShift(props) {
     });
 
     dateShift[0].shift.forEach((element) => {
-      if (shift.id !== element.id) {
-        let slot1Start = moment(shift.startTime).format("HH:mm");
-        let slot1End = moment(shift.endTime).format("HH:mm");
+      if (moment(shift.startTime).format("YYYY-MM-DD") === "2021-04-24") {
+        if (shift.id !== element.id && !element.overlapped) {
+          let slot1Start = moment(shift.startTime).format("HH:mm");
+          let slot1End = moment(shift.endTime).format("HH:mm");
 
-        let slot2Start = moment(element.startTime).format("HH:mm");
-        let slot2End = moment(element.endTime).format("HH:mm");
+          let slot2Start = moment(element.startTime).format("HH:mm");
+          let slot2End = moment(element.endTime).format("HH:mm");
 
-        let timeSegments = [];
-        timeSegments.push([slot1Start, slot1End]);
-        timeSegments.push([slot2Start, slot2End]);
+          let timeSegments = [];
+          timeSegments.push([slot1Start, slot1End]);
+          timeSegments.push([slot2Start, slot2End]);
 
-        shift.overlapped = overlap(timeSegments);
+          shift.overlapped = overlap(timeSegments);
+        }
       }
     });
 
@@ -95,7 +97,8 @@ function AvailableShift(props) {
                             moment(shift.startTime).format("HH:mm ") +
                             " - " +
                             moment(shift.endTime).format("HH:mm ") +
-                            getShiftStatus(shift)
+                            getShiftStatus(shift) +
+                            shift.overlapped
                           }
                         />
 
@@ -103,7 +106,8 @@ function AvailableShift(props) {
                           <ButtonWithLoader
                             shift={shift}
                             isButtonDisable={
-                              moment(shift.endTime).unix() < currentTimeStamp
+                              moment(shift.endTime).unix() < currentTimeStamp ||
+                              shift.overlapped
                             }
                           />
                         </ListItemSecondaryAction>
